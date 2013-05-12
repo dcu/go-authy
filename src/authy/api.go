@@ -84,3 +84,32 @@ func (authy *Authy) VerifyToken(userId int, token string) (TokenVerification, er
     return tokenVerification, err
 }
 
+func (authy *Authy) RequestSms(userId int, force bool) (SmsVerification, error) {
+    var smsVerification SmsVerification
+    var err error
+
+    resp, err := http.Get(authy.ApiUrl+"/protected/json/sms/"+url.QueryEscape(strconv.Itoa(userId))+"?api_key="+url.QueryEscape(authy.ApiKey)+"&force="+strconv.FormatBool(force) )
+
+    if err != nil {
+        log.Fatal("Error while contacting the API:",err)
+        return smsVerification, err
+    }
+
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+
+    smsVerification.Valid = (resp.StatusCode == 200)
+    if err != nil {
+        log.Fatal("Error reading from API:", err)
+        return smsVerification, err
+    }
+
+    err = json.Unmarshal(body, &smsVerification)
+    if err != nil {
+        log.Fatal("Error parsing JSON:", err)
+        return smsVerification, err
+    }
+
+    return smsVerification, err
+}
+
