@@ -1,5 +1,4 @@
 test:
-	@@GOPATH=${PWD} go test authy/tests
+	@go test -i authygo/tests
+	go test authygo/tests
 
-install_tests:
-	@@GOPATH=${PWD} go test -i authy/tests
