@@ -5,15 +5,23 @@ A go library for using the Authy public API.
 
 ## Installation
 
+If you don't have `$GOPATH` configured please type the following commands:
+
+    $ export GOPATH=$HOME/GoCode
+    $ mkdir -p $GOPATH/src
+    $ echo 'export GOPATH=$HOME/GoCode' >> ~/.bashrc
+
+
+If you already have `$GOPATH` configured then install the package:
+
 	$ go get github.com/dcu/authygo
 
 ## Usage
 
-To use this client you just need to import `authy` package and initialize it with your API KEY
-
+To use this client you just need to import `authygo` package and initialize it with your API KEY
 
     import "authygo"
-    authy_api := authy.NewAuthyApi('#your_api_key')
+    authy_api := authygo.NewAuthyApi('#your_api_key')
 
 Now that you have an Authy API object you can start sending requests.
 
