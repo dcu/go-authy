@@ -14,7 +14,18 @@ type Authy struct {
 
 func NewAuthyApi(apiKey string) *Authy {
     apiUrl := "https://api.authy.com"
-    return &Authy{apiKey, apiUrl}
+    return &Authy{
+		ApiKey: apiKey,
+		ApiUrl: apiUrl,
+	}
+}
+
+func NewSandboxAuthyApi(apiKey string) *Authy {
+	apiUrl := "https://sandbox-api.authy.com"
+    return &Authy{
+		ApiKey: apiKey,
+		ApiUrl: apiUrl,
+	}
 }
 
 func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
