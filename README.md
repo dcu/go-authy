@@ -81,6 +81,17 @@ As always, you can use `sms.Valid()` to verify if the token was sent. To be able
 
 You should force this request to ensure the user will get a token even if it's using the Authy Mobile App.
 
+## Requesting token via phone call
+
+To request a token via Phone Call you only need the user id.
+
+	phoneCall,err := authy_api.RequestPhoneCall("authy-id", <true|false>) # authy id, force
+
+As always, you can use `phoneCall.Valid()` to verify if the token was sent. To be able to use this method you need to have activated the Phone Call plugin for your Authy App.
+
+You should force this request to ensure the user will get a token even if it's using the Authy Mobile App.
+
+
 ## Contributing
 
 Get the code: 

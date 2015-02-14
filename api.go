@@ -73,3 +73,18 @@ func (authy *Authy) RequestSms(userId int, force bool) (*SmsRequest, error) {
     return smsVerification, err
 }
 
+
+func (authy *Authy) RequestPhoneCall(userId int, force bool) (*PhoneCallRequest, error) {
+    resp, err := http.Get(authy.ApiUrl+"/protected/json/call/"+url.QueryEscape(strconv.Itoa(userId))+"?api_key="+url.QueryEscape(authy.ApiKey)+"&force="+strconv.FormatBool(force) )
+
+    defer resp.Body.Close()
+    if err != nil {
+        log.Fatal("Error while contacting the API:",err)
+        return nil, err
+    }
+
+	smsVerification, err := NewPhoneCallRequest(resp)
+    return smsVerification, err
+}
+
+
