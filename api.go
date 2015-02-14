@@ -14,52 +14,51 @@ type Authy struct {
     ApiUrl  string
 }
 
-
 func NewAuthyApi(apiKey string) *Authy {
     apiUrl := "https://api.authy.com"
     return &Authy{apiKey, apiUrl}
 }
 
-func (authy *Authy) RegisterUser(email string, cellphone string, countryCode int) (User, error) {
-    var user User
+func (authy *Authy) RegisterUser(opts UserOpts) (*UserResponse, error) {
+    userResponse := &UserResponse{}
     var err error
 
-    log.Println("Creating user with", email, ",", cellphone, "and", countryCode)
+    log.Println("Creating user with", opts.Email, ",", opts.PhoneNumber, "and", opts.CountryCode)
     resp, err := http.PostForm(authy.ApiUrl+"/protected/json/users/new", url.Values{
-        "user[cellphone]": {cellphone},
-        "user[country_code]": {strconv.Itoa(countryCode)},
-        "user[email]": {email},
+        "user[cellphone]": {opts.PhoneNumber},
+        "user[country_code]": {strconv.Itoa(opts.CountryCode)},
+        "user[email]": {opts.Email},
         "api_key": {authy.ApiKey},
     })
 
     if err != nil {
         log.Fatal("Error while contacting the API:",err)
-        return user, err
+        return userResponse, err
     }
 
     defer resp.Body.Close()
     body, err := ioutil.ReadAll(resp.Body)
 
-    user.Valid = (resp.StatusCode == 200)
+    userResponse.Valid = (resp.StatusCode == 200)
     if err != nil {
         log.Fatal("Error reading from API:", err)
-        return user, err
+        return userResponse, err
     }
 
-    err = json.Unmarshal(body, &user)
+    err = json.Unmarshal(body, userResponse)
     if err != nil {
         log.Fatal("Error parsing JSON:", err)
-        return user, err
+        return userResponse, err
     }
 
-    return user, err
+    return userResponse, err
 }
 
 func (authy *Authy) VerifyToken(userId int, token string) (TokenVerification, error) {
     var tokenVerification TokenVerification
     var err error
 
-    resp, err := http.Get(authy.ApiUrl+"/protected/json/verify/"+url.QueryEscape(token)+"/"+url.QueryEscape(strconv.Itoa(userId))+"?api_key="+url.QueryEscape(authy.ApiKey)+"&force=true" )
+    resp, err := http.Get(authy.ApiUrl+"/protected/json/verify/"+url.QueryEscape(token)+"/"+url.QueryEscape(strconv.Itoa(userId))+"?api_key="+url.QueryEscape(authy.ApiKey) )
 
     if err != nil {
         log.Fatal("Error while contacting the API:",err)

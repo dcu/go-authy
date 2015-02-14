@@ -1,4 +1,5 @@
 test:
-	@go test -i authygo/tests
-	go test authygo/tests
+	go test -cover -coverprofile=coverage.out -short
+	go tool cover -func=coverage.out
+	@rm *.out
 

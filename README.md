@@ -29,19 +29,23 @@ Now that you have an Authy API object you can start sending requests.
 ## Creating Users
 
 __NOTE: User is matched based on cellphone and country code not e-mail.
-A cellphone is uniquely associated with an authy_id.__  
+A cellphone is uniquely associated with an authy_id.__
 
 Creating users is very easy, you need to pass an email, a cellphone and a country code:
-   
-    user, err := authy_api.RegisterUser("new_user@email.com", "405-342-5699", 57) #email, cellphone, area_code
 
-in this case `57` is the country code(Colombia), use `1` for USA.
+    userResponse, err := authy_api.RegisterUser(UserOpts{
+      Email: "new_user@email.com",
+      PhoneNumber: "405-342-5699",
+      CountryCode: 44
+    })
+
+in this case `44` is the country code(UK), use `1` for USA or Canada.
 
 You can easily see if the user was created by calling `user.Valid`.
 If request went right, you need to store the `authy id` in your database. Use `user.Id` to get this `id` in your database.
 
-    if user.Valid {
-        # store user.Id in your user database
+    if userResponse.Valid {
+        # store userResponse.User.Id in your user database
     }
 
 If something goes wrong `user.Valid` returns `false` and you can see the errors using the following code
