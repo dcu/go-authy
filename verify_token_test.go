@@ -1,4 +1,4 @@
-package authygo
+package authy
 
 import(
     "testing"
@@ -14,7 +14,7 @@ func Test_VerifyTokenWithUnregisteredUser(t *testing.T) {
         t.Log("No comm error found")
     }
 
-    if verification.Valid == true {
+    if verification.Valid() {
         t.Error("Verification should not be valid.")
     }
 
@@ -32,13 +32,13 @@ func Test_VerifyTokenWithInvalidToken(t *testing.T) {
 		PhoneNumber: "432-123-1111",
 		CountryCode: 1,
 	})
-    verification, err := api.VerifyToken(userResponse.User.Id, "000000")
+    verification, err := api.VerifyToken(userResponse.Id, "000000")
 
     if err != nil {
         t.Log("No comm error found")
     }
 
-    if verification.Valid == true {
+    if verification.Valid() {
         t.Error("Verification should not be valid.")
     }
 

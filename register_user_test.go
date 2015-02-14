@@ -1,4 +1,4 @@
-package authygo
+package authy
 
 import(
     "testing"
@@ -18,7 +18,7 @@ func Test_RegisterUserWithInvalidData(t *testing.T) {
         t.Log("No comm error found")
     }
 
-    if userResponse.Valid == true {
+    if userResponse.Valid() {
         t.Error("User should not be valid.")
     }
 
@@ -42,13 +42,13 @@ func Test_RegisterUserWithValidData(t *testing.T) {
         t.Log("Comm error found:",err)
     }
 
-    if userResponse.Valid != true {
+    if !userResponse.Valid() {
         t.Error("User should be valid.")
     }
 
     t.Log("Errors:", userResponse.Errors)
 
-    if userResponse.User.Id == 0 {
+    if userResponse.Id == 0 {
         t.Error("User id should be set.")
     }
 }

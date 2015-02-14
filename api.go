@@ -1,10 +1,8 @@
-package authygo
+package authy
 
 import(
     "net/http"
     "net/url"
-    "encoding/json"
-    "io/ioutil"
     "log"
     "strconv"
 )
@@ -19,10 +17,7 @@ func NewAuthyApi(apiKey string) *Authy {
     return &Authy{apiKey, apiUrl}
 }
 
-func (authy *Authy) RegisterUser(opts UserOpts) (*UserResponse, error) {
-    userResponse := &UserResponse{}
-    var err error
-
+func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
     log.Println("Creating user with", opts.Email, ",", opts.PhoneNumber, "and", opts.CountryCode)
     resp, err := http.PostForm(authy.ApiUrl+"/protected/json/users/new", url.Values{
         "user[cellphone]": {opts.PhoneNumber},
@@ -33,82 +28,37 @@ func (authy *Authy) RegisterUser(opts UserOpts) (*UserResponse, error) {
 
     if err != nil {
         log.Fatal("Error while contacting the API:",err)
-        return userResponse, err
+        return nil, err
     }
 
-    defer resp.Body.Close()
-    body, err := ioutil.ReadAll(resp.Body)
-
-    userResponse.Valid = (resp.StatusCode == 200)
-    if err != nil {
-        log.Fatal("Error reading from API:", err)
-        return userResponse, err
-    }
-
-    err = json.Unmarshal(body, userResponse)
-    if err != nil {
-        log.Fatal("Error parsing JSON:", err)
-        return userResponse, err
-    }
+	userResponse, err := NewUser(resp)
 
     return userResponse, err
 }
 
-func (authy *Authy) VerifyToken(userId int, token string) (TokenVerification, error) {
-    var tokenVerification TokenVerification
-    var err error
-
+func (authy *Authy) VerifyToken(userId int, token string) (*TokenVerification, error) {
     resp, err := http.Get(authy.ApiUrl+"/protected/json/verify/"+url.QueryEscape(token)+"/"+url.QueryEscape(strconv.Itoa(userId))+"?api_key="+url.QueryEscape(authy.ApiKey) )
+    defer resp.Body.Close()
 
     if err != nil {
         log.Fatal("Error while contacting the API:",err)
-        return tokenVerification, err
+        return nil, err
     }
 
-    defer resp.Body.Close()
-    body, err := ioutil.ReadAll(resp.Body)
-
-    tokenVerification.Valid = (resp.StatusCode == 200)
-    if err != nil {
-        log.Fatal("Error reading from API:", err)
-        return tokenVerification, err
-    }
-
-    err = json.Unmarshal(body, &tokenVerification)
-    if err != nil {
-        log.Fatal("Error parsing JSON:", err)
-        return tokenVerification, err
-    }
-
+	tokenVerification, err := NewTokenVerification(resp)
     return tokenVerification, err
 }
 
-func (authy *Authy) RequestSms(userId int, force bool) (SmsVerification, error) {
-    var smsVerification SmsVerification
-    var err error
-
+func (authy *Authy) RequestSms(userId int, force bool) (*SmsRequest, error) {
     resp, err := http.Get(authy.ApiUrl+"/protected/json/sms/"+url.QueryEscape(strconv.Itoa(userId))+"?api_key="+url.QueryEscape(authy.ApiKey)+"&force="+strconv.FormatBool(force) )
 
+    defer resp.Body.Close()
     if err != nil {
         log.Fatal("Error while contacting the API:",err)
-        return smsVerification, err
+        return nil, err
     }
 
-    defer resp.Body.Close()
-    body, err := ioutil.ReadAll(resp.Body)
-
-    smsVerification.Valid = (resp.StatusCode == 200)
-    if err != nil {
-        log.Fatal("Error reading from API:", err)
-        return smsVerification, err
-    }
-
-    err = json.Unmarshal(body, &smsVerification)
-    if err != nil {
-        log.Fatal("Error parsing JSON:", err)
-        return smsVerification, err
-    }
-
+	smsVerification, err := NewSmsRequest(resp)
     return smsVerification, err
 }
 
