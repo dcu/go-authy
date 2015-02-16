@@ -1,31 +1,31 @@
 package authy
 
-import(
-	"net/http"
+import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
-	"encoding/json"
+	"net/http"
 )
 
 type PhoneCallRequest struct {
 	HttpResponse *http.Response
-    Message string `json:"message"`
+	Message      string `json:"message"`
 }
 
 func NewPhoneCallRequest(response *http.Response) (*PhoneCallRequest, error) {
 	smsRequest := &PhoneCallRequest{HttpResponse: response}
-    body, err := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
 
-    if err != nil {
-        log.Fatal("Error reading from API:", err)
-        return smsRequest, err
-    }
+	if err != nil {
+		log.Fatal("Error reading from API:", err)
+		return smsRequest, err
+	}
 
-    err = json.Unmarshal(body, &smsRequest)
-    if err != nil {
-        log.Fatal("Error parsing JSON:", err)
-        return smsRequest, err
-    }
+	err = json.Unmarshal(body, &smsRequest)
+	if err != nil {
+		log.Fatal("Error parsing JSON:", err)
+		return smsRequest, err
+	}
 
 	return smsRequest, nil
 }
@@ -37,5 +37,3 @@ func (smsRequest *PhoneCallRequest) Valid() bool {
 
 	return false
 }
-
-

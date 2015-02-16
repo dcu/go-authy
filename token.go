@@ -1,32 +1,32 @@
 package authy
 
-import(
-	"net/http"
+import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
-	"encoding/json"
+	"net/http"
 )
 
 type TokenVerification struct {
 	HttpResponse *http.Response
-    Message string `json:"message"`
-	token string `json:"token"`
+	Message      string `json:"message"`
+	token        string `json:"token"`
 }
 
 func NewTokenVerification(response *http.Response) (*TokenVerification, error) {
 	tokenVerification := &TokenVerification{HttpResponse: response}
-    body, err := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
 
-    if err != nil {
-        log.Fatal("Error reading from API:", err)
-        return tokenVerification, err
-    }
+	if err != nil {
+		log.Fatal("Error reading from API:", err)
+		return tokenVerification, err
+	}
 
-    err = json.Unmarshal(body, &tokenVerification)
-    if err != nil {
-        log.Fatal("Error parsing JSON:", err)
-        return tokenVerification, err
-    }
+	err = json.Unmarshal(body, &tokenVerification)
+	if err != nil {
+		log.Fatal("Error parsing JSON:", err)
+		return tokenVerification, err
+	}
 
 	return tokenVerification, nil
 }
@@ -38,4 +38,3 @@ func (verification *TokenVerification) Valid() bool {
 
 	return false
 }
-

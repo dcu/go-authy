@@ -1,16 +1,16 @@
 package authy
 
-import(
-	"net/http"
+import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
-	"encoding/json"
+	"net/http"
 )
 
 type UserOpts struct {
-    Email string
-    PhoneNumber string
-    CountryCode int
+	Email       string
+	PhoneNumber string
+	CountryCode int
 }
 
 type UserId struct {
@@ -19,29 +19,29 @@ type UserId struct {
 
 type User struct {
 	HttpResponse *http.Response
-	Id int
-	UserId UserId `json:"user"`
-    Errors map[string]string `json:"errors"`
-    Message string `json:"message"`
-	success bool `json:"success"`
+	Id           int
+	UserId       UserId            `json:"user"`
+	Errors       map[string]string `json:"errors"`
+	Message      string            `json:"message"`
+	success      bool              `json:"success"`
 }
 
 func NewUser(httpResponse *http.Response) (*User, error) {
 	userResponse := &User{HttpResponse: httpResponse}
 
-    defer httpResponse.Body.Close()
-    body, err := ioutil.ReadAll(httpResponse.Body)
+	defer httpResponse.Body.Close()
+	body, err := ioutil.ReadAll(httpResponse.Body)
 
-    if err != nil {
-        log.Fatal("Error reading from API:", err)
-        return userResponse, err
-    }
+	if err != nil {
+		log.Fatal("Error reading from API:", err)
+		return userResponse, err
+	}
 
-    err = json.Unmarshal(body, userResponse)
-    if err != nil {
-        log.Fatal("Error parsing JSON:", err)
-        return userResponse, err
-    }
+	err = json.Unmarshal(body, userResponse)
+	if err != nil {
+		log.Fatal("Error parsing JSON:", err)
+		return userResponse, err
+	}
 
 	userResponse.Id = userResponse.UserId.Id
 	return userResponse, nil
@@ -54,4 +54,3 @@ func (response *User) Valid() bool {
 
 	return true
 }
-
