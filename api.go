@@ -1,15 +1,18 @@
 package authy
 
 import (
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var (
 	Logger = log.New(os.Stderr, "[authy] ", log.LstdFlags)
+	client = &http.Client{}
 )
 
 type Authy struct {
@@ -35,58 +38,108 @@ func NewSandboxAuthyApi(apiKey string) *Authy {
 
 func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
 	Logger.Println("Creating Authy user with", opts.Email, ",", opts.PhoneNumber, "and", opts.CountryCode)
-	resp, err := http.PostForm(authy.ApiUrl+"/protected/json/users/new", url.Values{
+
+	path := "/protected/json/users/new"
+	params := url.Values{
 		"user[cellphone]":    {opts.PhoneNumber},
 		"user[country_code]": {strconv.Itoa(opts.CountryCode)},
 		"user[email]":        {opts.Email},
-		"api_key":            {authy.ApiKey},
-	})
+	}
+
+	response, err := authy.doRequest("POST", path, params)
 
 	if err != nil {
-		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
-	userResponse, err := NewUser(resp)
-
+	userResponse, err := NewUser(response)
 	return userResponse, err
 }
 
 func (authy *Authy) VerifyToken(userId int, token string) (*TokenVerification, error) {
-	resp, err := http.Get(authy.ApiUrl + "/protected/json/verify/" + url.QueryEscape(token) + "/" + url.QueryEscape(strconv.Itoa(userId)) + "?api_key=" + url.QueryEscape(authy.ApiKey))
-	defer resp.Body.Close()
+	path := "/protected/json/verify/" + url.QueryEscape(token) + "/" + url.QueryEscape(strconv.Itoa(userId))
+
+	params := url.Values{}
+	response, err := authy.doRequest("GET", path, params)
 
 	if err != nil {
 		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
-	tokenVerification, err := NewTokenVerification(resp)
+	defer response.Body.Close()
+
+	tokenVerification, err := NewTokenVerification(response)
 	return tokenVerification, err
 }
 
 func (authy *Authy) RequestSms(userId int, force bool) (*SmsRequest, error) {
-	resp, err := http.Get(authy.ApiUrl + "/protected/json/sms/" + url.QueryEscape(strconv.Itoa(userId)) + "?api_key=" + url.QueryEscape(authy.ApiKey) + "&force=" + strconv.FormatBool(force))
+	path := "/protected/json/sms/" + url.QueryEscape(strconv.Itoa(userId))
+	params := url.Values{
+		"force": {strconv.FormatBool(force)},
+	}
 
-	defer resp.Body.Close()
+	response, err := authy.doRequest("GET", path, params)
 	if err != nil {
-		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
-	smsVerification, err := NewSmsRequest(resp)
+	defer response.Body.Close()
+	smsVerification, err := NewSmsRequest(response)
 	return smsVerification, err
 }
 
 func (authy *Authy) RequestPhoneCall(userId int, force bool) (*PhoneCallRequest, error) {
-	resp, err := http.Get(authy.ApiUrl + "/protected/json/call/" + url.QueryEscape(strconv.Itoa(userId)) + "?api_key=" + url.QueryEscape(authy.ApiKey) + "&force=" + strconv.FormatBool(force))
+	path := "/protected/json/call/" + url.QueryEscape(strconv.Itoa(userId))
 
-	defer resp.Body.Close()
+	params := url.Values{
+		"force": {strconv.FormatBool(force)},
+	}
+	response, err := authy.doRequest("GET", path, params)
 	if err != nil {
-		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
-	smsVerification, err := NewPhoneCallRequest(resp)
+	defer response.Body.Close()
+	smsVerification, err := NewPhoneCallRequest(response)
 	return smsVerification, err
+}
+
+func (authy *Authy) doRequest(method string, path string, params url.Values) (*http.Response, error) {
+	apiUrl := authy.buildUrl(path)
+
+	// Add api_key to all requests.
+	params.Add("api_key", url.QueryEscape(authy.ApiKey))
+
+	var bodyReader io.Reader
+	switch method {
+	case "POST":
+		{
+			encodedParams := params.Encode()
+			bodyReader = strings.NewReader(encodedParams)
+		}
+	case "GET":
+		{
+			apiUrl += "?" + params.Encode()
+		}
+	}
+
+	request, err := http.NewRequest(method, apiUrl, bodyReader)
+	if method == "POST" {
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+
+	if err != nil {
+		Logger.Println("Error creating HTTP request:", err)
+		return nil, err
+	}
+	response, err := client.Do(request)
+
+	return response, err
+}
+
+func (authy *Authy) buildUrl(path string) string {
+	url := authy.ApiUrl + "/" + path
+
+	return url
 }
