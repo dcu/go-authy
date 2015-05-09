@@ -3,7 +3,6 @@ package authy
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -33,13 +32,13 @@ func NewUser(httpResponse *http.Response) (*User, error) {
 	body, err := ioutil.ReadAll(httpResponse.Body)
 
 	if err != nil {
-		log.Fatal("Error reading from API:", err)
+		Logger.Println("Error reading from API:", err)
 		return userResponse, err
 	}
 
 	err = json.Unmarshal(body, userResponse)
 	if err != nil {
-		log.Fatal("Error parsing JSON:", err)
+		Logger.Println("Error parsing JSON:", err)
 		return userResponse, err
 	}
 

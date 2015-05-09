@@ -4,7 +4,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
+)
+
+var (
+	Logger = log.New(os.Stderr, "[authy] ", log.LstdFlags)
 )
 
 type Authy struct {
@@ -29,7 +34,7 @@ func NewSandboxAuthyApi(apiKey string) *Authy {
 }
 
 func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
-	log.Println("Creating user with", opts.Email, ",", opts.PhoneNumber, "and", opts.CountryCode)
+	Logger.Println("Creating Authy user with", opts.Email, ",", opts.PhoneNumber, "and", opts.CountryCode)
 	resp, err := http.PostForm(authy.ApiUrl+"/protected/json/users/new", url.Values{
 		"user[cellphone]":    {opts.PhoneNumber},
 		"user[country_code]": {strconv.Itoa(opts.CountryCode)},
@@ -38,7 +43,7 @@ func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
 	})
 
 	if err != nil {
-		log.Fatal("Error while contacting the API:", err)
+		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
@@ -52,7 +57,7 @@ func (authy *Authy) VerifyToken(userId int, token string) (*TokenVerification, e
 	defer resp.Body.Close()
 
 	if err != nil {
-		log.Fatal("Error while contacting the API:", err)
+		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
@@ -65,7 +70,7 @@ func (authy *Authy) RequestSms(userId int, force bool) (*SmsRequest, error) {
 
 	defer resp.Body.Close()
 	if err != nil {
-		log.Fatal("Error while contacting the API:", err)
+		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 
@@ -78,7 +83,7 @@ func (authy *Authy) RequestPhoneCall(userId int, force bool) (*PhoneCallRequest,
 
 	defer resp.Body.Close()
 	if err != nil {
-		log.Fatal("Error while contacting the API:", err)
+		Logger.Println("Error while contacting the API:", err)
 		return nil, err
 	}
 

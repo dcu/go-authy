@@ -3,14 +3,14 @@ package authy
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
 type TokenVerification struct {
 	HttpResponse *http.Response
-	Message      string `json:"message"`
-	token        string `json:"token"`
+	Message      string      `json:"message"`
+	Token        string      `json:"token"`
+	Success      interface{} `json:"success"`
 }
 
 func NewTokenVerification(response *http.Response) (*TokenVerification, error) {
@@ -18,13 +18,13 @@ func NewTokenVerification(response *http.Response) (*TokenVerification, error) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		log.Fatal("Error reading from API:", err)
+		Logger.Println("Error reading from API:", err)
 		return tokenVerification, err
 	}
 
 	err = json.Unmarshal(body, &tokenVerification)
 	if err != nil {
-		log.Fatal("Error parsing JSON:", err)
+		Logger.Println("Error parsing JSON:", err)
 		return tokenVerification, err
 	}
 
@@ -32,7 +32,7 @@ func NewTokenVerification(response *http.Response) (*TokenVerification, error) {
 }
 
 func (verification *TokenVerification) Valid() bool {
-	if verification.HttpResponse.StatusCode == 200 && verification.token == "is valid" {
+	if verification.HttpResponse.StatusCode == 200 && verification.Token == "is valid" {
 		return true
 	}
 
