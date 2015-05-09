@@ -27,6 +27,12 @@ To use this client you just need to import `go-authy` package and initialize it 
 
 Now that you have an Authy API object you can start sending requests.
 
+## Logger
+
+By default, most operations and errors are logged to `stderr`. You can
+access `authy.Logger` to replace the logger. Example:
+
+    authy.Logger = log.New(...)
 
 ## Creating Users
 
@@ -35,11 +41,7 @@ A cellphone is uniquely associated with an authy_id.__
 
 Creating users is very easy, you need to pass an email, a cellphone and a country code:
 
-    user, err := authy_api.RegisterUser(UserOpts{
-      Email: "new_user@email.com",
-      PhoneNumber: "405-342-5699",
-      CountryCode: 44
-    })
+    user, err := authy_api.RegisterUser("new_user@email.com", 44, "405-342-5699", url.Values{})
 
 in this case `44` is the country code(UK), use `1` for USA or Canada.
 
@@ -62,7 +64,7 @@ it returns a `map[string]string` explaining what went wrong with the request.
 
 To verify users you need the user id and a token. The token you get from the user through your login form. 
 
-    verification,err := authy_api.VerifyToken(authy-id, "token-entered-by-the-user")
+    verification,err := authy_api.VerifyToken(authy-id, "token-entered-by-the-user", url.Values{"ip":{"<user ip>"}})
 
 Once again you can use `verification.Valid` to verify whether the token was valid or not.
 
@@ -75,7 +77,7 @@ Once again you can use `verification.Valid` to verify whether the token was vali
 
 To request a SMS token you only need the user id.
 
-	sms,err := authy_api.RequestSms("authy-id", <true|false>) # authy id, force
+	sms,err := authy_api.RequestSms("authy-id", url.Values{})
 
 As always, you can use `sms.Valid()` to verify if the token was sent. To be able to use this method you need to have activated the SMS plugin for your Authy App.
 
@@ -85,16 +87,16 @@ You should force this request to ensure the user will get a token even if it's u
 
 To request a token via Phone Call you only need the user id.
 
-	phoneCall,err := authy_api.RequestPhoneCall("authy-id", <true|false>) # authy id, force
+	phoneCall,err := authy_api.RequestPhoneCall("authy-id", url.Values{"force":{"true"}})
 
 As always, you can use `phoneCall.Valid()` to verify if the token was sent. To be able to use this method you need to have activated the Phone Call plugin for your Authy App.
 
-You should force this request to ensure the user will get a token even if it's using the Authy Mobile App.
+You should force this request to ensure the user will get a token even if it's using the Authy App.
 
 
 ## Contributing
 
-Get the code: 
+Get the code:
 
     $ go get -u github.com/dcu/go-authy
     $ cd $GOPATH/src/github.com/dcu/go-authy
@@ -106,7 +108,6 @@ and start coding.
 To run the test just type:
 
     make test
-
 
 ### More...
 

@@ -36,15 +36,14 @@ func NewSandboxAuthyApi(apiKey string) *Authy {
 	}
 }
 
-func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
-	Logger.Println("Creating Authy user with", opts.Email, ",", opts.PhoneNumber, "and", opts.CountryCode)
+func (authy *Authy) RegisterUser(email string, countryCode int, phoneNumber string, params url.Values) (*User, error) {
+	Logger.Println("Creating Authy user with", email, ",", phoneNumber, "and", countryCode)
 
 	path := "/protected/json/users/new"
-	params := url.Values{
-		"user[cellphone]":    {opts.PhoneNumber},
-		"user[country_code]": {strconv.Itoa(opts.CountryCode)},
-		"user[email]":        {opts.Email},
-	}
+
+	params.Set("user[cellphone]", phoneNumber)
+	params.Set("user[country_code]", strconv.Itoa(countryCode))
+	params.Set("user[email]", email)
 
 	response, err := authy.doRequest("POST", path, params)
 
@@ -56,10 +55,9 @@ func (authy *Authy) RegisterUser(opts UserOpts) (*User, error) {
 	return userResponse, err
 }
 
-func (authy *Authy) VerifyToken(userId int, token string) (*TokenVerification, error) {
+func (authy *Authy) VerifyToken(userId int, token string, params url.Values) (*TokenVerification, error) {
 	path := "/protected/json/verify/" + url.QueryEscape(token) + "/" + url.QueryEscape(strconv.Itoa(userId))
 
-	params := url.Values{}
 	response, err := authy.doRequest("GET", path, params)
 
 	if err != nil {
@@ -73,12 +71,8 @@ func (authy *Authy) VerifyToken(userId int, token string) (*TokenVerification, e
 	return tokenVerification, err
 }
 
-func (authy *Authy) RequestSms(userId int, force bool) (*SmsRequest, error) {
+func (authy *Authy) RequestSms(userId int, params url.Values) (*SmsRequest, error) {
 	path := "/protected/json/sms/" + url.QueryEscape(strconv.Itoa(userId))
-	params := url.Values{
-		"force": {strconv.FormatBool(force)},
-	}
-
 	response, err := authy.doRequest("GET", path, params)
 	if err != nil {
 		return nil, err
@@ -89,12 +83,9 @@ func (authy *Authy) RequestSms(userId int, force bool) (*SmsRequest, error) {
 	return smsVerification, err
 }
 
-func (authy *Authy) RequestPhoneCall(userId int, force bool) (*PhoneCallRequest, error) {
+func (authy *Authy) RequestPhoneCall(userId int, params url.Values) (*PhoneCallRequest, error) {
 	path := "/protected/json/call/" + url.QueryEscape(strconv.Itoa(userId))
 
-	params := url.Values{
-		"force": {strconv.FormatBool(force)},
-	}
 	response, err := authy.doRequest("GET", path, params)
 	if err != nil {
 		return nil, err
@@ -109,7 +100,7 @@ func (authy *Authy) doRequest(method string, path string, params url.Values) (*h
 	apiUrl := authy.buildUrl(path)
 
 	// Add api_key to all requests.
-	params.Add("api_key", url.QueryEscape(authy.ApiKey))
+	params.Add("api_key", authy.ApiKey)
 
 	var bodyReader io.Reader
 	switch method {

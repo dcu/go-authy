@@ -6,12 +6,6 @@ import (
 	"net/http"
 )
 
-type UserOpts struct {
-	Email       string
-	PhoneNumber string
-	CountryCode int
-}
-
 type UserId struct {
 	Id int `json:"id"`
 }
