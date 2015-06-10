@@ -45,7 +45,7 @@ func (authy *Authy) RegisterUser(email string, countryCode int, phoneNumber stri
 	params.Set("user[country_code]", strconv.Itoa(countryCode))
 	params.Set("user[email]", email)
 
-	response, err := authy.doRequest("POST", path, params)
+	response, err := authy.DoRequest("POST", path, params)
 
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (authy *Authy) RegisterUser(email string, countryCode int, phoneNumber stri
 func (authy *Authy) VerifyToken(userId int, token string, params url.Values) (*TokenVerification, error) {
 	path := "/protected/json/verify/" + url.QueryEscape(token) + "/" + url.QueryEscape(strconv.Itoa(userId))
 
-	response, err := authy.doRequest("GET", path, params)
+	response, err := authy.DoRequest("GET", path, params)
 
 	if err != nil {
 		Logger.Println("Error while contacting the API:", err)
@@ -73,7 +73,7 @@ func (authy *Authy) VerifyToken(userId int, token string, params url.Values) (*T
 
 func (authy *Authy) RequestSms(userId int, params url.Values) (*SmsRequest, error) {
 	path := "/protected/json/sms/" + url.QueryEscape(strconv.Itoa(userId))
-	response, err := authy.doRequest("GET", path, params)
+	response, err := authy.DoRequest("GET", path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (authy *Authy) RequestSms(userId int, params url.Values) (*SmsRequest, erro
 func (authy *Authy) RequestPhoneCall(userId int, params url.Values) (*PhoneCallRequest, error) {
 	path := "/protected/json/call/" + url.QueryEscape(strconv.Itoa(userId))
 
-	response, err := authy.doRequest("GET", path, params)
+	response, err := authy.DoRequest("GET", path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (authy *Authy) RequestPhoneCall(userId int, params url.Values) (*PhoneCallR
 	return smsVerification, err
 }
 
-func (authy *Authy) doRequest(method string, path string, params url.Values) (*http.Response, error) {
+func (authy *Authy) DoRequest(method string, path string, params url.Values) (*http.Response, error) {
 	apiUrl := authy.buildUrl(path)
 
 	// Add api_key to all requests.
