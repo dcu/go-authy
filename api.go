@@ -122,6 +122,24 @@ func (authy *Authy) SendApprovalRequest(userID string, message string, details D
 	return NewApprovalRequest(response)
 }
 
+// FindApprovalRequest finds an approval request given its uuid.
+func (authy *Authy) FindApprovalRequest(uuid string, params url.Values) (*ApprovalRequest, error) {
+	path := fmt.Sprintf("/onetouch/json/approval_requests/%s", uuid)
+	response, err := authy.DoRequest("GET", path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+	approvalRequest, err := NewApprovalRequest(response)
+	if err != nil {
+		return nil, err
+	}
+
+	approvalRequest.UUID = uuid
+	return approvalRequest, nil
+}
+
 // DoRequest performs a HTTP request to the Authy API
 func (authy *Authy) DoRequest(method string, path string, params url.Values) (*http.Response, error) {
 	apiURL := authy.buildURL(path)
