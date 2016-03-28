@@ -16,7 +16,6 @@ type User struct {
 	} `json:"user"`
 	Errors  map[string]string `json:"errors"`
 	Message string            `json:"message"`
-	success bool              `json:"success"`
 }
 
 // NewUser returns an instance of User

@@ -1,6 +1,7 @@
 package authy
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -15,6 +16,9 @@ var (
 	Logger = log.New(os.Stderr, "[authy] ", log.LstdFlags)
 	client = &http.Client{}
 )
+
+// Details for OneTouch transaction
+type Details map[string]string
 
 // Authy contains credentials to connect to the Authy's API
 type Authy struct {
@@ -104,6 +108,20 @@ func (authy *Authy) RequestPhoneCall(userID string, params url.Values) (*PhoneCa
 	return smsVerification, err
 }
 
+// SendApprovalRequest sends a OneTouch's approval request to the given user.
+func (authy *Authy) SendApprovalRequest(userID string, message string, details Details, params url.Values) (*ApprovalRequest, error) {
+	addParamsForOneTouch(params, message, details)
+	path := fmt.Sprintf(`/onetouch/json/users/%s/approval_requests`, url.QueryEscape(userID))
+
+	response, err := authy.DoRequest("POST", path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+	return NewApprovalRequest(response)
+}
+
 // DoRequest performs a HTTP request to the Authy API
 func (authy *Authy) DoRequest(method string, path string, params url.Values) (*http.Response, error) {
 	apiURL := authy.buildURL(path)
@@ -142,4 +160,13 @@ func (authy *Authy) buildURL(path string) string {
 	url := authy.APIURL + "/" + path
 
 	return url
+}
+
+func addParamsForOneTouch(params url.Values, message string, details map[string]string) url.Values {
+	params.Set("message", message)
+	for key, value := range details {
+		params.Set(fmt.Sprintf("details[%s]", key), value)
+	}
+
+	return params
 }
