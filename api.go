@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -17,21 +18,25 @@ var (
 	client = &http.Client{}
 )
 
+var (
+	longPollingDelay = 2 * time.Second
+)
+
 // Details for OneTouch transaction
 type Details map[string]string
 
 // Authy contains credentials to connect to the Authy's API
 type Authy struct {
-	APIKey string
-	APIURL string
+	APIKey  string
+	BaseURL string
 }
 
 // NewAuthyAPI returns an instance of Authy pointing to production.
 func NewAuthyAPI(apiKey string) *Authy {
 	apiURL := "https://api.authy.com"
 	return &Authy{
-		APIKey: apiKey,
-		APIURL: apiURL,
+		APIKey:  apiKey,
+		BaseURL: apiURL,
 	}
 }
 
@@ -39,8 +44,8 @@ func NewAuthyAPI(apiKey string) *Authy {
 func NewSandboxAuthyAPI(apiKey string) *Authy {
 	apiURL := "https://sandbox-api.authy.com"
 	return &Authy{
-		APIKey: apiKey,
-		APIURL: apiURL,
+		APIKey:  apiKey,
+		BaseURL: apiURL,
 	}
 }
 
@@ -140,6 +145,25 @@ func (authy *Authy) FindApprovalRequest(uuid string, params url.Values) (*Approv
 	return approvalRequest, nil
 }
 
+// WaitForApprovalRequest waits until the status of an approval request has changed or times out.
+func (authy *Authy) WaitForApprovalRequest(uuid string, maxDuration time.Duration, params url.Values) (OneTouchStatus, error) {
+	for maxDuration > 0 {
+		request, err := authy.FindApprovalRequest(uuid, url.Values{})
+		if err != nil {
+			return OneTouchStatusPending, err
+		}
+
+		if request.Status != OneTouchStatusPending {
+			return request.Status, nil
+		}
+
+		maxDuration -= longPollingDelay
+		time.Sleep(longPollingDelay)
+	}
+
+	return OneTouchStatusExpired, nil
+}
+
 // DoRequest performs a HTTP request to the Authy API
 func (authy *Authy) DoRequest(method string, path string, params url.Values) (*http.Response, error) {
 	apiURL := authy.buildURL(path)
@@ -175,7 +199,7 @@ func (authy *Authy) DoRequest(method string, path string, params url.Values) (*h
 }
 
 func (authy *Authy) buildURL(path string) string {
-	url := authy.APIURL + "/" + path
+	url := authy.BaseURL + "/" + path
 
 	return url
 }

@@ -6,13 +6,30 @@ import (
 	"net/http"
 )
 
+// OneTouchStatus is the type of the OneTouch statuses.
+type OneTouchStatus string
+
+var (
+	// OneTouchStatusApproved is the approved status of an approval request
+	OneTouchStatusApproved OneTouchStatus = "approved"
+
+	// OneTouchStatusPending is the pending status of an approval request
+	OneTouchStatusPending OneTouchStatus = "pending"
+
+	// OneTouchStatusDenied is the denied status of an approval request
+	OneTouchStatusDenied OneTouchStatus = "denied"
+
+	// OneTouchStatusExpired is the expired status of an approval request
+	OneTouchStatusExpired OneTouchStatus = "expired"
+)
+
 // ApprovalRequest is the approval request response.
 type ApprovalRequest struct {
 	HTTPResponse *http.Response
 
-	Status   string `json:"status"`
-	UUID     string `json:"uuid"`
-	Notified bool   `json:"notified"`
+	Status   OneTouchStatus `json:"status"`
+	UUID     string         `json:"uuid"`
+	Notified bool           `json:"notified"`
 }
 
 // NewApprovalRequest returns an instance of ApprovalRequest.

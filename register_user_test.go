@@ -7,7 +7,7 @@ import (
 
 func Test_RegisterUserWithInvalidData(t *testing.T) {
 	api := NewAuthyAPI("bf12974d70818a08199d17d5e2bae630")
-	api.APIURL = "https://sandbox-api.authy.com"
+	api.BaseURL = "https://sandbox-api.authy.com"
 
 	userResponse, err := api.RegisterUser("foo", 1, "123", url.Values{})
 

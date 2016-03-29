@@ -3,6 +3,7 @@ package authy
 import (
 	"net/url"
 	"testing"
+	"time"
 )
 
 func Test_SendApprovalRequest(t *testing.T) {
@@ -47,5 +48,36 @@ func Test_FindApprovalRequest(t *testing.T) {
 
 	if uuid != approvalRequest.UUID {
 		t.Error("Approval request doesn't match.")
+	}
+}
+
+func Test_WaitForApprovalRequest(t *testing.T) {
+	api := NewSandboxAuthyAPI("bf12974d70818a08199d17d5e2bae630")
+
+	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1111", url.Values{})
+	approvalRequest, err := api.SendApprovalRequest(user.ID, "please approve this", Details{"data1": "value1"}, url.Values{})
+
+	if err != nil {
+		t.Error("error found", err)
+	}
+
+	if !approvalRequest.Valid() {
+		t.Error("Apprval request should be valid.")
+	}
+
+	now := time.Now()
+	status, err := api.WaitForApprovalRequest(approvalRequest.UUID, 1*time.Second, url.Values{"user_ip": {"234.78.25.2"}})
+	elapsedTime := time.Now().Sub(now)
+
+	if err != nil {
+		t.Error("error found", err)
+	}
+
+	if elapsedTime < 1 {
+		t.Error("max duration not reached")
+	}
+
+	if status != OneTouchStatusExpired {
+		t.Error("expired status expected")
 	}
 }
