@@ -69,6 +69,21 @@ func (authy *Authy) RegisterUser(email string, countryCode int, phoneNumber stri
 	return userResponse, err
 }
 
+// UserStatus returns a set of data about a user.
+func (authy *Authy) UserStatus(id string, params url.Values) (*UserStatus, error) {
+	Logger.Println("Finding Authy user with id", id)
+
+	path := fmt.Sprintf("/protected/json/users/%s/status", id)
+
+	response, err := authy.DoRequest("GET", path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	statusResponse, err := NewUserStatus(response)
+	return statusResponse, err
+}
+
 // VerifyToken verifies the given token
 func (authy *Authy) VerifyToken(userID string, token string, params url.Values) (*TokenVerification, error) {
 	path := "/protected/json/verify/" + url.QueryEscape(token) + "/" + url.QueryEscape(userID)
