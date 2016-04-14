@@ -2,7 +2,6 @@ package authy
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -52,13 +51,10 @@ func NewApprovalRequest(response *http.Response) (*ApprovalRequest, error) {
 		return nil, err
 	}
 
-	approvalRequest := jsonResponse.ApprovalRequest
 	if jsonResponse.Success == false {
-		return nil, errors.New(
-			fmt.Sprintf(
-				"Invalid approval request response: %s\n",
-				jsonResponse.Message))
+		return nil, fmt.Errorf("invalid approval request response: %s\n", jsonResponse.Message)
 	}
+	approvalRequest := jsonResponse.ApprovalRequest
 	approvalRequest.HTTPResponse = response
 
 	return approvalRequest, nil
