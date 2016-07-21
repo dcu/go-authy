@@ -114,6 +114,32 @@ As always, you can use `phoneCall.Valid()` to verify if the token was sent. To b
 
 You should force this request to ensure the user will get a token even if it's using the Authy App.
 
+# OneTouch
+
+## Sending an approval request
+
+To send the push notification to a user use the method `SendApprovalRequest` which receives the Authy ID of the user, a message, the details to show to the user and any extra http param you want to send to the server.
+
+```go
+details := authy.Details{
+    "Type":      "SSH Server",
+    "Server IP": serverIP,
+    "User IP":   clientIP,
+    "User":      os.Getenv("USER"),
+}
+approvalRequest, err := authyAPI.SendApprovalRequest(authyID, "Log to your ssh server", details, url.Values{})
+```
+
+## Wait for approval request result
+
+An easy way to get the response of the user is polling. The method `WaitForApprovalRequest` wraps all the polling code in just one method, use it as follows:
+
+```go
+status, err := authyAPI.WaitForApprovalRequest(approvalRequest.UUID, 45, url.Values{})
+if status == authy.OneTouchStatusApproved {
+    // the request was approved.
+}
+```
 
 ## Contributing
 
