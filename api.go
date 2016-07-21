@@ -18,8 +18,16 @@ var (
 	client = &http.Client{}
 )
 
-var (
+const (
 	longPollingDelay = 2 * time.Second
+)
+
+const (
+	// SMS indicates the message will be delivered via SMS
+	SMS = "sms"
+
+	// Voice indicates the message will be delivered via phone call
+	Voice = "call"
 )
 
 // Details for OneTouch transaction
@@ -177,6 +185,38 @@ func (authy *Authy) WaitForApprovalRequest(uuid string, maxDuration time.Duratio
 	}
 
 	return OneTouchStatusExpired, nil
+}
+
+// StartPhoneVerification starts the phone verification process.
+func (authy *Authy) StartPhoneVerification(countryCode int, phoneNumber string, via string, params url.Values) (*PhoneVerificationStart, error) {
+	params.Set("country_code", strconv.Itoa(countryCode))
+	params.Set("phone_number", phoneNumber)
+	params.Set("via", via)
+
+	path := fmt.Sprintf("/protected/json/phones/verification/start")
+	response, err := authy.DoRequest("POST", path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+	return NewPhoneVerificationStart(response)
+}
+
+// CheckPhoneVerification checks the given verification code.
+func (authy *Authy) CheckPhoneVerification(countryCode int, phoneNumber string, verificationCode string, params url.Values) (*PhoneVerificationCheck, error) {
+	params.Set("country_code", strconv.Itoa(countryCode))
+	params.Set("phone_number", phoneNumber)
+	params.Set("verification_code", verificationCode)
+
+	path := fmt.Sprintf("/protected/json/phones/verification/check")
+	response, err := authy.DoRequest("GET", path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+	return NewPhoneVerificationCheck(response)
 }
 
 // DoRequest performs a HTTP request to the Authy API

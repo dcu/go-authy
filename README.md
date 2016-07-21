@@ -141,6 +141,28 @@ if status == authy.OneTouchStatusApproved {
 }
 ```
 
+
+# Phone Verification
+
+## Start a phone verification
+
+To start a phone verification use the following code:
+```go
+verification, err := authyAPI.StartPhoneVerification(1, "555-555-5555",
+authy.SMS)
+```
+
+## Check phone verification
+
+To check a phone verification use the following code:
+```go
+verification, err := authyAPI.CheckPhoneVerification(1, "555-555-5555",
+"000000")
+
+if verification.Success {
+}
+```
+
 ## Contributing
 
 Get the code:
