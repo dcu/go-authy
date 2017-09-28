@@ -103,7 +103,7 @@ func (authy *Authy) VerifyToken(userID string, token string, params url.Values) 
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 
 	tokenVerification, err := NewTokenVerification(response)
 	return tokenVerification, err
@@ -117,7 +117,7 @@ func (authy *Authy) RequestSMS(userID string, params url.Values) (*SMSRequest, e
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 	smsVerification, err := NewSMSRequest(response)
 	return smsVerification, err
 }
@@ -131,7 +131,7 @@ func (authy *Authy) RequestPhoneCall(userID string, params url.Values) (*PhoneCa
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 	smsVerification, err := NewPhoneCallRequest(response)
 	return smsVerification, err
 }
@@ -146,7 +146,7 @@ func (authy *Authy) SendApprovalRequest(userID string, message string, details D
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 	return NewApprovalRequest(response)
 }
 
@@ -158,7 +158,7 @@ func (authy *Authy) FindApprovalRequest(uuid string, params url.Values) (*Approv
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 	approvalRequest, err := NewApprovalRequest(response)
 	if err != nil {
 		return nil, err
@@ -199,7 +199,7 @@ func (authy *Authy) StartPhoneVerification(countryCode int, phoneNumber string, 
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 	return NewPhoneVerificationStart(response)
 }
 
@@ -215,7 +215,7 @@ func (authy *Authy) CheckPhoneVerification(countryCode int, phoneNumber string, 
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer closeResponseBody(response)
 	return NewPhoneVerificationCheck(response)
 }
 
@@ -260,6 +260,13 @@ func (authy *Authy) buildURL(path string) string {
 	url := authy.BaseURL + path
 
 	return url
+}
+
+func closeResponseBody(response *http.Response) {
+	err := response.Body.Close()
+	if err != nil {
+		Logger.Println("Error closing response body:", err)
+	}
 }
 
 func addParamsForOneTouch(params url.Values, message string, details map[string]string) url.Values {
