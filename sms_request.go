@@ -33,9 +33,5 @@ func NewSMSRequest(response *http.Response) (*SMSRequest, error) {
 
 // Valid returns true if the SMS was sent
 func (request *SMSRequest) Valid() bool {
-	if request.HTTPResponse.StatusCode == 200 {
-		return true
-	}
-
-	return false
+	return request.HTTPResponse.StatusCode == 200
 }

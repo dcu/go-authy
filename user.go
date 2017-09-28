@@ -38,7 +38,7 @@ type UserStatus struct {
 func NewUser(httpResponse *http.Response) (*User, error) {
 	userResponse := &User{HTTPResponse: httpResponse}
 
-	defer httpResponse.Body.Close()
+	defer closeResponseBody(httpResponse)
 	body, err := ioutil.ReadAll(httpResponse.Body)
 
 	if err != nil {
@@ -56,11 +56,11 @@ func NewUser(httpResponse *http.Response) (*User, error) {
 	return userResponse, nil
 }
 
-// NewStatus returns an instance of UserStatus
+// NewUserStatus returns an instance of UserStatus
 func NewUserStatus(httpResponse *http.Response) (*UserStatus, error) {
 	statusResponse := &UserStatus{HTTPResponse: httpResponse}
 
-	defer httpResponse.Body.Close()
+	defer closeResponseBody(httpResponse)
 
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
@@ -80,9 +80,5 @@ func NewUserStatus(httpResponse *http.Response) (*UserStatus, error) {
 
 // Valid returns true if the user was created successfully
 func (response *User) Valid() bool {
-	if response.HTTPResponse.StatusCode != 200 {
-		return false
-	}
-
-	return true
+	return response.HTTPResponse.StatusCode != 200
 }

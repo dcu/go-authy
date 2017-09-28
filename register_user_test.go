@@ -77,7 +77,7 @@ func Test_UserStatus(t *testing.T) {
 		t.Error("Country code does not match")
 	}
 
-	if userStatus.Success != true {
+	if !userStatus.Success {
 		t.Error("Request failed: ", userStatus.Message)
 	}
 }

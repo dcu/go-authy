@@ -51,8 +51,8 @@ func NewApprovalRequest(response *http.Response) (*ApprovalRequest, error) {
 		return nil, err
 	}
 
-	if jsonResponse.Success == false {
-		return nil, fmt.Errorf("invalid approval request response: %s\n", jsonResponse.Message)
+	if !jsonResponse.Success {
+		return nil, fmt.Errorf("invalid approval request response: %s", jsonResponse.Message)
 	}
 	approvalRequest := jsonResponse.ApprovalRequest
 	approvalRequest.HTTPResponse = response
@@ -62,9 +62,5 @@ func NewApprovalRequest(response *http.Response) (*ApprovalRequest, error) {
 
 // Valid returns true if the approval request was valid.
 func (request *ApprovalRequest) Valid() bool {
-	if request.HTTPResponse.StatusCode == 200 {
-		return true
-	}
-
-	return false
+	return request.HTTPResponse.StatusCode == 200
 }

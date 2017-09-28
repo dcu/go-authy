@@ -33,9 +33,5 @@ func NewPhoneCallRequest(response *http.Response) (*PhoneCallRequest, error) {
 
 // Valid returns true if the request was valid.
 func (request *PhoneCallRequest) Valid() bool {
-	if request.HTTPResponse.StatusCode == 200 {
-		return true
-	}
-
-	return false
+	return request.HTTPResponse.StatusCode == 200
 }
