@@ -80,5 +80,5 @@ func NewUserStatus(httpResponse *http.Response) (*UserStatus, error) {
 
 // Valid returns true if the user was created successfully
 func (response *User) Valid() bool {
-	return response.HTTPResponse.StatusCode != 200
+	return response.HTTPResponse.StatusCode == 200
 }
