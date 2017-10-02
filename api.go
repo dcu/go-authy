@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,7 +16,21 @@ import (
 var (
 	// Logger is the default logger of this package. You can override it with your own.
 	Logger = log.New(os.Stderr, "[authy] ", log.LstdFlags)
-	client = &http.Client{}
+
+	_Dialer = &net.Dialer{
+		Timeout:   5 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+
+	// DefaultTransport is the default transport struct for the HTTP client
+	DefaultTransport = &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           _Dialer.DialContext,
+		MaxIdleConns:          128,
+		IdleConnTimeout:       30 * time.Second,
+		TLSHandshakeTimeout:   5 * time.Second,
+		ExpectContinueTimeout: 3 * time.Second,
+	}
 )
 
 const (
@@ -37,14 +52,19 @@ type Details map[string]string
 type Authy struct {
 	APIKey  string
 	BaseURL string
+	Client  *http.Client
 }
 
 // NewAuthyAPI returns an instance of Authy pointing to production.
 func NewAuthyAPI(apiKey string) *Authy {
 	apiURL := "https://api.authy.com"
+
 	return &Authy{
 		APIKey:  apiKey,
 		BaseURL: apiURL,
+		Client: &http.Client{
+			Transport: DefaultTransport,
+		},
 	}
 }
 
@@ -239,7 +259,7 @@ func (authy *Authy) DoRequest(method string, path string, params url.Values) (*h
 		Logger.Println("Error creating HTTP request:", err)
 		return nil, err
 	}
-	response, err := client.Do(request)
+	response, err := authy.Client.Do(request)
 
 	return response, err
 }

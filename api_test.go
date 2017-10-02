@@ -11,6 +11,6 @@ func TestBuildURL(t *testing.T) {
 
 	api := newAPI()
 
-	c.Equal(api.buildURL("/path/to/endpoint"), "https://api.authy.com/path/to/endpoint")
-	c.Equal(api.buildURL("path/to/endpoint"), "https://api.authy.com/path/to/endpoint")
+	c.Equal("https://api.authy.com/path/to/endpoint", api.buildURL("/path/to/endpoint"))
+	c.Equal("https://api.authy.com/path/to/endpoint", api.buildURL("path/to/endpoint"))
 }
