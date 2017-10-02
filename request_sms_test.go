@@ -3,19 +3,21 @@ package authy
 import (
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_RequestSms(t *testing.T) {
-	api := NewSandboxAuthyAPI("bf12974d70818a08199d17d5e2bae630")
+	c := require.New(t)
+
+	api := newAPI()
 
 	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1111", url.Values{})
+	c.Nil(err)
+
 	verification, err := api.RequestSMS(user.ID, url.Values{"force": {"true"}})
 
-	if err != nil {
-		t.Error("External error found", err)
-	}
-
-	if !verification.Valid() {
-		t.Error("Verification should be valid.")
-	}
+	c.Nil(err)
+	c.Equal("SMS is not enabled", verification.Message)
+	c.False(verification.Valid())
 }

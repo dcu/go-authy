@@ -11,9 +11,9 @@ import (
 func Test_SendApprovalRequest(t *testing.T) {
 	c := require.New(t)
 
-	api := NewSandboxAuthyAPI("bf12974d70818a08199d17d5e2bae630")
+	api := newAPI()
 
-	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1111", url.Values{})
+	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1211", url.Values{})
 	approvalRequest, err := api.SendApprovalRequest(user.ID, "please approve this", Details{"data1": "value1"}, url.Values{})
 
 	c.Nil(err)
@@ -24,9 +24,9 @@ func Test_SendApprovalRequest(t *testing.T) {
 func Test_FindApprovalRequest(t *testing.T) {
 	c := require.New(t)
 
-	api := NewSandboxAuthyAPI("bf12974d70818a08199d17d5e2bae630")
+	api := newAPI()
 
-	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1111", url.Values{})
+	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1131", url.Values{})
 	approvalRequest, err := api.SendApprovalRequest(user.ID, "please approve this", Details{"data1": "value1"}, url.Values{})
 
 	c.Nil(err)
@@ -36,16 +36,16 @@ func Test_FindApprovalRequest(t *testing.T) {
 	approvalRequest, err = api.FindApprovalRequest(uuid, url.Values{})
 
 	c.Nil(err)
-	c.Equal("pending", approvalRequest.Status)
+	c.Equal(OneTouchStatusPending, approvalRequest.Status)
 	c.Equal(uuid, approvalRequest.UUID)
 }
 
 func Test_WaitForApprovalRequest(t *testing.T) {
 	c := require.New(t)
 
-	api := NewSandboxAuthyAPI("bf12974d70818a08199d17d5e2bae630")
+	api := newAPI()
 
-	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1111", url.Values{})
+	user, err := api.RegisterUser("foo@example.com", 1, "432-123-1114", url.Values{})
 	c.Nil(err)
 	c.NotNil(user)
 
@@ -55,11 +55,11 @@ func Test_WaitForApprovalRequest(t *testing.T) {
 	c.True(approvalRequest.Valid())
 
 	now := time.Now()
-	status, err := api.WaitForApprovalRequest(approvalRequest.UUID, 1*time.Second, url.Values{"user_ip": {"234.78.25.2"}})
+	maxDuration := 2 * time.Second
+	status, err := api.WaitForApprovalRequest(approvalRequest.UUID, maxDuration, url.Values{"user_ip": {"234.78.25.2"}})
 	c.Nil(err)
 
 	elapsedTime := time.Since(now)
-
-	c.True(elapsedTime < 1)
+	c.True(elapsedTime < maxDuration+(1*time.Second))
 	c.Equal(status, OneTouchStatusExpired)
 }

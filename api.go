@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	longPollingDelay = 2 * time.Second
+	longPollingDelay = 2000 * time.Millisecond
 )
 
 const (
@@ -42,15 +42,6 @@ type Authy struct {
 // NewAuthyAPI returns an instance of Authy pointing to production.
 func NewAuthyAPI(apiKey string) *Authy {
 	apiURL := "https://api.authy.com"
-	return &Authy{
-		APIKey:  apiKey,
-		BaseURL: apiURL,
-	}
-}
-
-// NewSandboxAuthyAPI returns an instance of Authy pointing to sandbox. Use this to implement automated tests.
-func NewSandboxAuthyAPI(apiKey string) *Authy {
-	apiURL := "https://sandbox-api.authy.com"
 	return &Authy{
 		APIKey:  apiKey,
 		BaseURL: apiURL,
