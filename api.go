@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gojektech/heimdall"
 )
 
 var (
@@ -52,19 +54,30 @@ type Details map[string]string
 type Authy struct {
 	APIKey  string
 	BaseURL string
-	Client  *http.Client
+	Client  heimdall.Client
 }
 
 // NewAuthyAPI returns an instance of Authy pointing to production.
 func NewAuthyAPI(apiKey string) *Authy {
 	apiURL := "https://api.authy.com"
 
+	initalTimeout := 2 * time.Millisecond
+	maxTimeout := 1000 * time.Millisecond
+	exponentFactor := 2.0
+	maximumJitterInterval := 2 * time.Millisecond
+	backoff := heimdall.NewExponentialBackoff(initalTimeout, maxTimeout, exponentFactor, maximumJitterInterval)
+
+	client := heimdall.NewHTTPClient(1 * time.Second)
+	client.SetRetrier(heimdall.NewRetrier(backoff))
+	client.SetRetryCount(4)
+	client.SetCustomHTTPClient(&http.Client{
+		Transport: DefaultTransport,
+	})
+
 	return &Authy{
 		APIKey:  apiKey,
 		BaseURL: apiURL,
-		Client: &http.Client{
-			Transport: DefaultTransport,
-		},
+		Client:  client,
 	}
 }
 
