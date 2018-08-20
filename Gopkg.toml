@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/gojektech/heimdall"
-  revision = "0312835926b7d1b89967f13c7aa5182f52436337"
+  revision = "v5.0.0"
 
 [[constraint]]
   name = "github.com/stretchr/testify"

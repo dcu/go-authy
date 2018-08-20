@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gojektech/heimdall"
+	"github.com/gojektech/heimdall/httpclient"
 )
 
 var (
@@ -67,12 +68,14 @@ func NewAuthyAPI(apiKey string) *Authy {
 	maximumJitterInterval := 2 * time.Millisecond
 	backoff := heimdall.NewExponentialBackoff(initalTimeout, maxTimeout, exponentFactor, maximumJitterInterval)
 
-	client := heimdall.NewHTTPClient(1 * time.Second)
-	client.SetRetrier(heimdall.NewRetrier(backoff))
-	client.SetRetryCount(4)
-	client.SetCustomHTTPClient(&http.Client{
-		Transport: DefaultTransport,
-	})
+	client := httpclient.NewClient(
+		httpclient.WithHTTPTimeout(1*time.Second),
+		httpclient.WithRetrier(heimdall.NewRetrier(backoff)),
+		httpclient.WithRetryCount(4),
+		httpclient.WithHTTPClient(&http.Client{
+			Transport: DefaultTransport,
+		}),
+	)
 
 	return &Authy{
 		APIKey:  apiKey,
