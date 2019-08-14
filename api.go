@@ -261,6 +261,18 @@ func (authy *Authy) GenerateGenericAuthenticatorQR(userID string, appLabel strin
 	return NewGenericAuthenticatorQR(response)
 }
 
+// CheckTOTPVerification checks wether TOTP token given is valid or not.
+func (authy *Authy) CheckTOTPVerification(userID string, token string, params url.Values) (*TOTPTokenVerification, error) {
+	path := fmt.Sprintf("/protected/json/verify/%s/%s", token, userID)
+	response, err := authy.DoRequest("GET", path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	defer closeResponseBody(response)
+	return NewTOTPTokenVerification(response)
+}
+
 // DoRequest performs a HTTP request to the Authy API
 func (authy *Authy) DoRequest(method string, path string, params url.Values) (*http.Response, error) {
 	apiURL := authy.buildURL(path)

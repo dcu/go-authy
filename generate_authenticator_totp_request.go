@@ -36,6 +36,6 @@ func NewGenericAuthenticatorQR(response *http.Response) (*GenericAuthenticatorAp
 }
 
 // Valid returns true if the Generic Authenticator QR was generated
-func (request *GenericAuthenticatorApp) Valid() bool {
-	return request.HTTPResponse.StatusCode == 200
+func (genericAuthenticatorApp *GenericAuthenticatorApp) Valid() bool {
+	return genericAuthenticatorApp.HTTPResponse.StatusCode == 200
 }
