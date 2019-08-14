@@ -247,7 +247,7 @@ func (authy *Authy) CheckPhoneVerification(countryCode int, phoneNumber string, 
 }
 
 // GenerateGenericAuthenticatorQR generates QR for authenticator apps.
-func (authy *Authy) GenerateGenericAuthenticatorQR(userID string, appLabel string, qrSize int, params url.Values) (*GenericAuthenticatorApp, error) {
+func (authy *Authy) GenerateGenericAuthenticatorQR(userID string, appLabel string, qrSize int, params url.Values) (*GenericAuthenticatorQRRequest, error) {
 	params.Set("label", appLabel)
 	params.Set("qr_size", strconv.Itoa(qrSize))
 
@@ -259,18 +259,6 @@ func (authy *Authy) GenerateGenericAuthenticatorQR(userID string, appLabel strin
 
 	defer closeResponseBody(response)
 	return NewGenericAuthenticatorQR(response)
-}
-
-// CheckTOTPVerification checks wether TOTP token given is valid or not.
-func (authy *Authy) CheckTOTPVerification(userID string, token string, params url.Values) (*TOTPTokenVerification, error) {
-	path := fmt.Sprintf("/protected/json/verify/%s/%s", token, userID)
-	response, err := authy.DoRequest("GET", path, params)
-	if err != nil {
-		return nil, err
-	}
-
-	defer closeResponseBody(response)
-	return NewTOTPTokenVerification(response)
 }
 
 // DoRequest performs a HTTP request to the Authy API
