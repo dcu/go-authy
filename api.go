@@ -248,8 +248,13 @@ func (authy *Authy) CheckPhoneVerification(countryCode int, phoneNumber string, 
 
 // GenerateGenericAuthenticatorQR generates QR for authenticator apps.
 func (authy *Authy) GenerateGenericAuthenticatorQR(userID string, appLabel string, qrSize int, params url.Values) (*GenericAuthenticatorQRRequest, error) {
-	params.Set("label", appLabel)
-	params.Set("qr_size", strconv.Itoa(qrSize))
+	if appLabel != "" {
+		params.Set("label", appLabel)
+	}
+
+	if qrSize > 0 {
+		params.Set("qr_size", strconv.Itoa(qrSize))
+	}
 
 	path := fmt.Sprintf("/protected/json/users/%s/secret", userID)
 	response, err := authy.DoRequest("POST", path, params)

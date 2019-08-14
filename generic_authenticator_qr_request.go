@@ -10,11 +10,10 @@ import (
 type GenericAuthenticatorQRRequest struct {
 	HTTPResponse *http.Response
 
-	Label   string      `json:"label"`
-	Issuer  string      `json:"issuer"`
-	QRCode  string      `json:"qr_code"`
-	Message string      `json:"message"`
-	Success interface{} `json:"success"`
+	Label   string `json:"label"`
+	Issuer  string `json:"issuer"`
+	QRCode  string `json:"qr_code"`
+	Success bool   `json:"success"`
 }
 
 // NewGenericAuthenticatorQR creates an instance of a GenericAuthenticatorQRRequest
@@ -37,6 +36,6 @@ func NewGenericAuthenticatorQR(response *http.Response) (*GenericAuthenticatorQR
 }
 
 // Valid returns true if the Generic Authenticator QR was generated
-func (genericAuthenticatorApp *GenericAuthenticatorQRRequest) Valid() bool {
-	return genericAuthenticatorApp.HTTPResponse.StatusCode == 200
+func (request *GenericAuthenticatorQRRequest) Valid() bool {
+	return request.HTTPResponse.StatusCode == 200
 }

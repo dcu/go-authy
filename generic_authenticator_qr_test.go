@@ -18,6 +18,5 @@ func Test_GenerateAuthenticatorQR(t *testing.T) {
 	genericAppAuthenticator, err := api.GenerateGenericAuthenticatorQR(user.ID, "foo app", 300, url.Values{})
 
 	c.Nil(err)
-	c.Equal("The application does not have Generic Tokens enabled", genericAppAuthenticator.Message)
 	c.False(genericAppAuthenticator.Valid())
 }
