@@ -163,6 +163,19 @@ if verification.Success {
 }
 ```
 
+# Authy Time-based One-Time Passwords (TOTP)
+
+## Generate Authenticator App QR
+
+To enable 2FA using generic authenticator app use the following code:
+```go
+
+genericAuthenticator, err := authyAPI.GenerateGenericAuthenticatorQR(1, "App Label", 300)
+if genericAuthenticator.Success {
+}
+```
+
+
 ## Contributing
 
 Get the code:
